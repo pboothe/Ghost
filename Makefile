@@ -1,7 +1,7 @@
 all: paper.pdf ghost
 
 clean:
-	rm -f paper.pdf ghost paper.o paper.log paper.hi paper.aux ghostout.tex
+	rm -f paper.pdf ghost paper.o *.log paper.hi *.aux ghostout.tex *.bbl *.blg
 
 ghost: paper.lhs
 	ghc --make paper.lhs -o $@
