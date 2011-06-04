@@ -1,4 +1,4 @@
-all: paper.pdf ghost
+all: paper.pdf
 
 clean:
 	rm -f paper.pdf ghost paper.o *.log paper.hi *.aux ghostout.tex *.bbl *.blg
