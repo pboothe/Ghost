@@ -1,5 +1,6 @@
 \documentclass{siamltex}
 
+\usepackage{tikz}
 \usepackage{fancyvrb}
 \usepackage{verbatim}
 \DefineVerbatimEnvironment{code}{Verbatim}{fontsize=\small}
@@ -19,7 +20,10 @@ We discuss the game of Ghost and then show how to completely solve it on a
 given dictionary.  In doing so, we expose an interesting symmetry between the
 prefix tree data structure and the game tree of the game.  We end by showing
 how to produce a minimal tree so that the player who can win has to memorize as
-little as possible.
+little as possible.  Along the way, we provide an introduction to the
+programming language Haskell, which attempts to bring the idea of a ``function
+inside of a program'' in line with the mathematical conception of a function as
+a 1-1 mapping from a domain to a range.
 \end{abstract}
 
 \begin{keywords} 
@@ -45,22 +49,145 @@ letter.  If the composition of the first and second letters completes a word,
 Bob loses.  Bob also loses if no word in the dictionary begins with the string
 built up over the course of gameplay.
 
-Play proceeds back and forth until either the built-up sequence of characters completes a
-dictionary word, or the built-up string is not a prefix of a dictionary word.
-In all cases, the last player to play is said to have lost.  The
-mis\`ere\footnote{Swap the winning and losing conditions on a game to generate
-the mis\`ere version.  In Ghost, this means that the winner is the player who
-makes a gibberish prefix or manages to complete a word.  Chess, checkers, and
-all the classic games of game theory have been analyzed both ways, and many
-questions about mis\`ere games remain open to this day.} version of the game is
-an immediate win for Alice in any language with single-letter words, but may be
-more interesting if single-character words are eliminated from the dictionary.
+Play proceeds back and forth until either the built-up sequence of characters
+completes a dictionary word, or the built-up string is not a prefix of a
+dictionary word.  In all cases, the last player to play is said to have lost.
+The mis\`ere\footnote{Swap the winning and losing conditions on a game to
+generate the mis\`ere version.  In Ghost, this means that the winner is the
+player who makes a gibberish prefix or manages to complete a word.  Chess,
+checkers, and all the classic games of game theory have been analyzed both
+ways, and many questions about mis\`ere games remain open to this day.} version
+of the game is an immediate win for Alice in any language with single-letter
+words, but may be more interesting if single-character words are eliminated
+from the dictionary.  Two example game transcripts may be seen in Figure~\ref{fig:transcript}.
 
-Before play begins, both players must agree on a dictionary, ...
+\begin{figure}
+\begin{tabular}{p{2.35in} | p{2.35in}}
+\hfill Game 1 \hfill ~ & \hfill Game 2 \hfill ~ \\
+\hline
+Alice: I say `G'
 
-No chance ...
+Bob: I say `H' 
 
-Game tree ...
+Alice: I say `O'
+
+Bob: I say `S'
+
+Alice: I say `T'
+
+Bob: You just completed the word `GHOST', so I win and you lose!  
+&
+Alice: I say `G'
+
+Bob: I say `H' 
+
+Alice: I say `O'
+
+Bob: I say `X'
+
+Alice: No word in the dictionary begins with `GHOX', and gibberish is forbidden, so I win and you lose!
+\\
+\hline
+\hfill Bob wins. \hfill ~ & \hfill Alice wins. \hfill ~
+\end{tabular}
+
+\caption{Two sample games of Ghost, with two different outcomes.}
+\label{fig:transcript}
+\end{figure}
+
+In order to resolve disputes, players must agree on a dictionary before play
+begins. In the case of the games in Figure~\ref{fig:transcript} this agreement
+is a very useful thing, because if Bob claims in game 2 that there is a word
+that starts with `GHOX', then the game ceases to be a game becomes an argument.
+In the presence of an agreed-upon dictionary, the players can look up the
+contested word and have an uncontestable result.
+
+The game of Ghost contains no randomness (no dice or coin flips), and there are no secrets between the two players (no cards that only one player can see).  Gomes of this nature are called XXXXX, and were first studied in XXXX by YYYYY.  In analyzing games of this type, YYYY constructed what we call a game tree.
+
+A game tree specifies the complete state of the game, how that state was
+reached, and all possible subgames which might result from a given position.
+Every vertex of the tree represents a game state and a single player's turn,
+and every edge represents a move that one player is allowed to do in order to
+make it another player's turn.  To concretize this, we will look at the game of
+Ghost with an extremely simple dictionary.  Let us say that Alice and Bob agree
+that they should use a dictionary containing only 4 words: tree, tries, green,
+and tan.  This means that the first player, Alice, can only choose from two
+letters if she would like to avoid creating gibberish!  The full tree for this
+game may be seen in Figure~\ref{fig:tinytree}.
+
+\begin{figure}
+\begin{tikzpicture}
+\node (root) [color=red]{Alice (game start)} [grow=right]
+        child { 
+                node [color=blue]{Bob}
+                child { 
+                        node [color=red]{Alice}
+                        child {
+                                node [color=blue]{Bob}
+                                child {
+                                        node [color=red]{Alice}
+                                        child {
+                                                node [color=blue]{Bob wins!}
+                                                edge from parent
+                                                        node [above] {n}
+                                        }
+                                        edge from parent
+                                                node [above] {e}
+                                }
+                                edge from parent
+                                        node [above] {e}
+                        }
+                        edge from parent
+                                node [above] {r}
+                }
+                edge from parent
+                        node [below] {g}
+        }
+        child { 
+                node [color=blue]{Bob}
+                child {
+                        node [color=red]{Alice}
+                        child {
+                                node [color=blue]{Bob wins!}
+                                edge from parent
+                                        node [above] {n}
+                        }
+                        edge from parent
+                                node [above] {a}
+                }
+                child {
+                        node [color=red]{Alice}
+                        child {
+                                node [color=blue]{Bob} 
+                                child {
+                                        node [color=red]{Alice wins!}
+                                        edge from parent
+                                                node [above] {e}
+                                }
+                                edge from parent
+                                        node [above] {e}
+                        }
+                        child {
+                                node [color=blue]{Bob}
+                                child {
+                                        node [color=red]{Alice wins!}
+                                        edge from parent
+                                                node [above] {e}
+                                }
+                                edge from parent
+                                        node [above] {i}
+                        }
+                        edge from parent
+                                node [above] {r}
+                }
+                edge from parent
+                        node [above] {t}
+        }
+;
+\end{tikzpicture}
+\caption{The complete game tree for the game of Ghost played with a dictionary containing only the words: ``green'', ''tan'', ``tree'', and ``trie''.  Note that if Bob plays cleverly, they can always win, no matter what Alice does.}
+\label{fig:tinytree}
+\end{figure}
 
 Finding the winner when given a game tree...
 
