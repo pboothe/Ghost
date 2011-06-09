@@ -7,6 +7,8 @@
 \DefineVerbatimEnvironment{example}{Verbatim}{fontsize=\small}
 \newcommand{\ignore}[1]{}
 
+\newcommand{\newword}[1]{\textit{#1}}
+
 \title{Winning the Game of Ghost with Prefix Trees, Game Trees, and Small Winning Trees}
 \author{Peter Boothe\thanks{Mathematics and Computer Science Department,
 Manhattan College, 3840 Corlear Ave, Bronx, New York, 10463
@@ -102,7 +104,10 @@ that starts with `GHOX', then the game ceases to be a game becomes an argument.
 In the presence of an agreed-upon dictionary, the players can look up the
 contested word and have an uncontestable result.
 
-The game of Ghost contains no randomness (no dice or coin flips), and there are no secrets between the two players (no cards that only one player can see).  Gomes of this nature are called XXXXX, and were first studied in XXXX by YYYYY.  In analyzing games of this type, YYYY constructed what we call a game tree.
+The game of Ghost contains no randomness (no dice or coin flips), and there are
+no secrets between the two players (no cards that only one player can see).
+Gomes of this nature are called XXXXX, and were first studied in XXXX by YYYYY.
+In analyzing games of this type, YYYY constructed what we call a game tree.
 
 A game tree specifies the complete state of the game, how that state was
 reached, and all possible subgames which might result from a given position.
@@ -185,11 +190,22 @@ game may be seen in Figure~\ref{fig:tinytree}.
         }
 ;
 \end{tikzpicture}
-\caption{The complete game tree for the game of Ghost played with a dictionary containing only the words: ``green'', ''tan'', ``tree'', and ``trie''.  Note that if Bob plays cleverly, they can always win, no matter what Alice does.}
+\caption{The complete game tree for the game of Ghost played with a dictionary containing only the words: ``green'', ''tan'', ``tree'', and ``trie''.  Note that here, if Bob plays cleverly, he can always win, no matter what Alice does.}
 \label{fig:tinytree}
 \end{figure}
 
-Finding the winner when given a game tree...
+When a game is completely described by a game tree, and every leaf of the tree
+involves on player or the other winning, then there exists a \newword{winning
+strategy} for one (and only one) of the players.  A winning strategy is a set
+of moves which, if performed, allows the moving to be guaranteed of a win.
+Tic-tac-toe has no winning strategy, because despite its simple game tree, many
+of the leaves of the tree (aka ends of the game) involve neither player
+winning.  In the example given in Figure~\ref{fig:tinytree}, Bob has a winning
+strategy.  No matter what move Alice begins with, there exists a respose that
+Bob can give, such that no matter move Alice makes next, there exists a respons
+Bob can give, such that $\ldots$ Bob wins.
+
+This can be encoded using the existential and universal quantifiers in the following way: 
 
 \section{Prefix Trees}
 
