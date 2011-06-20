@@ -58,10 +58,14 @@ The mis\`ere\footnote{Swap the winning and losing conditions on a game to
 generate the mis\`ere version.  In Ghost, this means that the winner is the
 player who makes a gibberish prefix or manages to complete a word.  Chess,
 checkers, and all the classic games of game theory have been analyzed both
-ways, and many questions about mis\`ere games remain open to this day.} version
-of the game is an immediate win for Alice in any language with single-letter
-words, but may be more interesting if single-character words are eliminated
-from the dictionary.  Two example game transcripts may be seen in Figure~\ref{fig:transcript}.
+ways, and many questions about mis\`ere games remain open to this day.  In any
+dictionary with single-letter words, the mis\`ere version of Ghost is trivial.
+Because Scrabble prohibits single-letter words, there are no such words in the
+Scrabble dictionary.  Modifying the given code to solve Mis\`ere Ghost is a fun
+exercise left to the interested reader.} version of the game is an
+immediate win for Alice in any language with single-letter words, but may be
+more interesting if single-character words are eliminated from the dictionary.
+Two example game transcripts may be seen in Figure~\ref{fig:transcript}.
 
 \begin{figure}
 \begin{tabular}{p{2.35in} | p{2.35in}}
@@ -195,17 +199,53 @@ game may be seen in Figure~\ref{fig:tinytree}.
 \end{figure}
 
 When a game is completely described by a game tree, and every leaf of the tree
-involves on player or the other winning, then there exists a \newword{winning
+involves one player or the other winning, then there exists a \newword{winning
 strategy} for one (and only one) of the players.  A winning strategy is a set
 of moves which, if performed, allows the moving to be guaranteed of a win.
 Tic-tac-toe has no winning strategy, because despite its simple game tree, many
 of the leaves of the tree (aka ends of the game) involve neither player
 winning.  In the example given in Figure~\ref{fig:tinytree}, Bob has a winning
-strategy.  No matter what move Alice begins with, there exists a respose that
-Bob can give, such that no matter move Alice makes next, there exists a respons
-Bob can give, such that $\ldots$ Bob wins.
+strategy.  Of course, with an aim towards actual formality, we can define this
+more rigorously in the form of a logical statement.
 
-This can be encoded using the existential and universal quantifiers in the following way: 
+Let us define logical variables $\{a_i | 0 \le i \le n\}$, where $n$ is the
+maximum number of moves in a game, and move variables $m_i$, where $m_i$ is a
+is an element of the set of all legal moves at turn $i$, given previous moves
+$\{m_1, \cdots m_{i-1}\}$, with $m_1$ being an element from the set of all legal starting moves.  If $a_i$ is true, then Alice has won on move $i$.
+Therefore, to encode the idea of Alice having a winning strategy in the game of
+Ghost where the word in the dictionary is of maximum length $n$ (which
+corresponds to the maximum number of moves in the game), we say that there
+exists a move such that Alice immediately wins, or, no matter what Bob responds
+with, Alice can still win.  Formally, for the example in
+Figure~\ref{fig:tinytree} with maximum length 5, we say 
+\[a_0 \lor (\exists m_1 : a_1 \lor (\forall m_2 : a_2 \lor (\exists m_3 : a_3 \lor (\forall m_4 : a_4 \lor \exists m_5 : a_5))))\]
+This complicated expression corresponds to an even-more-complicated english
+phrase:
+\begin{quote} Either Alice wins the game by not moving at all ($a_0$) or there
+exists a first move ($m_1$) that either causes her to immediately win ($a_1$),
+or, for all of Bob's possible responses ($m_2$) to that first move, either Alice
+immediately wins ($a_2$) or there exists a move ($m_3$) for Alice where either
+she immediately wins ($a_3$) or, for all of Bob's possible responses ($m_4$), either Alice immediately wins ($a_4$) or there exists a move ($m_5$) that causes her to win.\end{quote}
+This tortured expression presents an immediate argument for the benefits of
+mathematical notation.  Unfortunately, or notation still has a little
+ambiguity.  In particular, each $a_i$ is a function of both the dictionary, and
+all the previous moves $m_1 \cdots m_i$, and the set of legal moves at any
+given point is also a function of the dictionary and all the previous moves.  Thus, to be perfectly unambiguous, we should take our dictionary, a set of words $D$, and define a function ...
+
+Once we have our expression written down completely, we can see that all of the
+terms of the expression are well-defined within the expression once $D$ is
+specified --- it has no \newword{free variables}.  This means that, for a
+particular dictionary, the given statement is either true or it is false.  If
+the statement is true, then there exists a winning strategy for Alice.  If the
+statement is not true, then there does not exist a winning strategy for Alice.
+Because someone must win this game, if Alice can not be guaranteed a win, then
+Bob can be.  Thus, determining a winning strategy for a game of no chance and
+perfect information comes down to the statisfaction of a logical expression.
+
+Somewhat surprisingly, this duality between expressions and games can encode
+any computation at all.  The interested reader is referred to ``Games, Puzzles,
+and Computation'' by Hearn and Demaine\cite{gpc}, which explores this duality
+in great depth and discusses the  ...
 
 \section{Prefix Trees}
 
@@ -254,8 +294,10 @@ data Trie a =
 
 data Ending = Middle | End
 
+emptyTrie :: Trie Ending
 emptyTrie = Trie Middle Map.empty
 
+insert :: String -> Trie Ending -> Trie Ending
 insert "" t = Trie End Map.empty
 insert (first:word) trie = 
     let 
@@ -280,9 +322,11 @@ the trie nodes.
 \begin{code}
 data Player = Alice | Bob
 
+other :: Player -> Player
 other Alice = Bob
 other Bob = Alice
 
+same :: Player -> Player -> Bool
 same Alice Alice = True
 same Bob Bob = True
 same Alice Bob = False
@@ -293,6 +337,7 @@ Note that our game tree is almost exactly the same as the trie datatype, and so
 storing the player turn at every trie node is quite easy.
 
 \begin{code}
+trieToGameTrie :: Player -> Trie Ending -> Trie Player
 trieToGameTrie player trie = 
     let 
         kids = children trie
@@ -340,6 +385,7 @@ data GameNode =
     GameNode { winner :: Player
              , turn   :: Player }
                  
+alphaBeta :: Trie Player -> Trie GameNode
 alphaBeta (Trie player moves) = 
     if Map.null moves 
     then
@@ -360,8 +406,10 @@ is to look at the winner stored in the root node of the tree, which we will
 save as a string for future printing.
 
 \begin{code}
+gameWinner :: Trie GameNode -> Player
 gameWinner = winner . value 
 
+showPlayer :: Player -> String
 showPlayer Alice = "Alice"
 showPlayer Bob = "Bob"
 \end{code}
@@ -380,6 +428,7 @@ function which will take as its input a solved trie, and output a minimal trie,
 and in order to do that, we must define a size function for tries.
 
 \begin{code}
+size :: Trie a -> Integer
 size (Trie _ kids) = 
     if Map.null kids
     then 1
@@ -391,6 +440,7 @@ when it is the overall winner's turn.  If all moves are equally good, then we
 will only try to require memorization of the smallest subtree in every case.
 
 \begin{code}
+minimize :: Player -> Trie GameNode -> Trie GameNode
 minimize bigwinner (Trie gamenode kids) =
     if Map.null kids
     then Trie gamenode kids
@@ -415,6 +465,7 @@ Once the tree has been minimized, all that remains is to print it out, which
 we do in alphabetic order.
 
 \begin{code}
+printGameTrie :: String -> Trie GameNode -> String
 printGameTrie prefix (Trie gn kids) =
         if Map.null kids
         then 
@@ -438,6 +489,7 @@ printGameTrie prefix (Trie gn kids) =
 \section{Putting it all together}
 
 \begin{code}
+main :: IO ()
 main = 
     do 
         contents <- readFile "twl06.txt"
