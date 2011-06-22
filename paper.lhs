@@ -12,7 +12,7 @@
 
 \newcommand{\newword}[1]{\textit{#1}}
 
-\title{Winning the Game of Ghost with Prefix Trees, Game Trees, and Small Winning Trees}
+\title{Winning the Game of Ghost with Prefix Trees, Game Trees, and Minimal Winning Strategy Trees}
 \author{Peter Boothe\thanks{Mathematics and Computer Science Department,
 Manhattan College, 3840 Corlear Ave, Bronx, New York, 10463
 ({\tt peter.boothe@manhattan.edu}).}}
@@ -116,6 +116,7 @@ no secrets between the two players (no cards that only one player can see).
 Gomes of this nature are called XXXXX, and were first studied in XXXX by YYYYY.
 In analyzing games of this type, YYYY constructed what we call a game tree.
 
+\section{Game Trees} 
 A game tree specifies the complete state of the game, how that state was
 reached, and all possible subgames which might result from a given position.
 Every vertex of the tree represents a game state and a single player's turn,
@@ -244,9 +245,9 @@ winning.  In the example given in Figure~\ref{fig:tinytree}, Bob has a winning
 strategy.  Of course, with an aim towards actual formality, we can define this
 more rigorously in the form of a logical statement.
 
-Let us define logical variables $\{a_i | 0 \le i \le n\}$, where $n$ is the
+\section{Encoding Winning Strategies With Logic} Let us define logical variables $\{a_i | 0 \le i \le n\}$, where $n$ is the
 maximum number of moves in a game, and move variables $m_i$, where $m_i$ is a
-is an element of the set of all legal moves at turn $i$, given previous moves
+is an element of the set of all valid moves at turn $i$, given previous moves
 $\{m_1, \cdots m_{i-1}\}$, with $m_1$ being an element from the set of all legal starting moves.  If $a_i$ is true, then Alice has won on move $i$.
 Therefore, to encode the idea of Alice having a winning strategy in the game of
 Ghost where the word in the dictionary is of maximum length $n$ (which
@@ -254,7 +255,9 @@ corresponds to the maximum number of moves in the game), we say that there
 exists a move such that Alice immediately wins, or, no matter what Bob responds
 with, Alice can still win.  Formally, for the example in
 Figure~\ref{fig:tinytree} with maximum length 5, we say 
-\[a_0 \lor (\exists m_1~[ a_1 \lor (\forall m_2~[ a_2 \lor (\exists m_3~[ a_3 \lor (\forall m_4~[ a_4 \lor (\exists m_5~[ a_5])])])])])\]
+\begin{equation}
+a_0 \lor (\exists m_1~[ a_1 \lor (\forall m_2~[ a_2 \lor (\exists m_3~[ a_3 \lor (\forall m_4~[ a_4 \lor (\exists m_5~[ a_5])])])])]) \label{smallogic}
+\end{equation}
 This complicated expression corresponds to an even-more-complicated english
 phrase:
 \begin{quote} Either Alice wins the game by not moving at all ($a_0$) or there
@@ -270,13 +273,13 @@ given point is also a function of the dictionary and all the previous moves.
 Thus, to be totally explicit, we should take our dictionary, a set of
 words $D$, and define two functions: $v$ and $w$.  The function $v$ will take
 as input the dictionary $D$ and the list of all prior moves, and it will return
-a set of legal moves.  The function $w$ will take as input the dictionary $D$
+the set of valid moves.  The function $w$ will take as input the dictionary $D$
 and all prior moves, and return whether the current player has just won the
 game.  Our final logical expression is then:
 \begin{align}
 w(D) &\lor (\exists m_1 \in v(D)~[ w(D, m_1) \nonumber \\
 &\hspace{1em}\lor (\forall m_2 \in v(D, m_1)~[ w(D, m_1, m_2) \nonumber \\
-&\hspace{2em}\lor (\exists m_3 \in v(D, m_1, m_2)~[ w(D, m_1, m_2, m_3) \\
+&\hspace{2em}\lor (\exists m_3 \in v(D, m_1, m_2)~[ w(D, m_1, m_2, m_3) \label{biglogic} \\
 &\hspace{3em}\lor (\forall m_4 \in v(D, m_1, m_2, m_3)~[ w(D, m_1, m_2, m_3, m_4) \nonumber \\
 &\hspace{4em}\lor (\exists m_5 \in v(D, m_1, m_2, m_3, m_4)~[ w(D, m_1, m_2, m_3, m_4, m_5)])])])])]) \nonumber
 \end{align}
@@ -302,7 +305,7 @@ in great depth and discusses the  ...
 
 Prefix trees were introduced as ``tries'' by Edward Fredkin in
 1960\cite{fredkin} based on the idea of dictionary re{\bf trie}val, but resultant confusion about how to pronounce the name
-(both ``tree'' and ``try'' are used) as well as the proliferation of other kinds of tree, have led people to the more modern name of prefix tree.
+(both ``tree'' and ``try'' are used) as well as the proliferation of other kinds of tree, have led people to the more modern name of prefix tree.  A prefix tree is ...
 
 From a computer science standpoint, building a solver for Ghost can be quite
 interesting.  Our solution allows us to combine a prefix tree and a game tree.
