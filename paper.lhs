@@ -1,6 +1,9 @@
 \documentclass{siamltex}
 
+\usepackage{amsmath}
 \usepackage{tikz}
+\usetikzlibrary{shapes,snakes}
+
 \usepackage{fancyvrb}
 \usepackage{verbatim}
 \DefineVerbatimEnvironment{code}{Verbatim}{fontsize=\small}
@@ -119,82 +122,115 @@ Every vertex of the tree represents a game state and a single player's turn,
 and every edge represents a move that one player is allowed to do in order to
 make it another player's turn.  To concretize this, we will look at the game of
 Ghost with an extremely simple dictionary.  Let us say that Alice and Bob agree
-that they should use a dictionary containing only 4 words: tree, tries, green,
-and tan.  This means that the first player, Alice, can only choose from two
-letters if she would like to avoid creating gibberish!  The full tree for this
-game may be seen in Figure~\ref{fig:tinytree}.
+that they should use a dictionary containing only 4 words: ghost, green, tan,
+tree, and tries.  This means that the first player, Alice, can only choose from
+two letters if she would like to avoid creating gibberish!  The full tree for
+this game may be seen in Figure~\ref{fig:tinytree}.
 
 \begin{figure}
-\begin{tikzpicture}
-\node (root) [color=red]{Alice (game start)} [grow=right]
+\begin{center}
+\begin{tikzpicture}[
+        rc/.style={color=white,fill=red!70,circle},
+        bc/.style={color=white,fill=blue!70,circle},
+        rs/.style={color=white,fill=red!70,star,star points=7},
+        bs/.style={color=white,fill=blue!70,star,star points=7},
+]
+\node (root) [grow=down] {Game Start} child {
+[sibling distance=35mm]
+node [rc]{} 
+    child {
+        [sibling distance=15mm]
+        node [bc]{}
+        child { node [rc]{}
+            child { node [bc]{}
+                child { node [rc]{}
+                    child { node [bs]{}
+                        edge from parent node [left] {t}
+                    }
+                    edge from parent node [left] {s}
+                }
+                edge from parent node [left] {o}
+            }
+            edge from parent node [left] {h}
+        }
+        child { node [rc]{}
+            child { node [bc]{}
+                child { node [rc]{}
+                    child { node [bs]{}
+                        edge from parent node [right] {n}
+                    }
+                    edge from parent node [right] {e}
+                }
+                edge from parent node [right] {e}
+            }
+            edge from parent node [right] {r}
+        }
+        edge from parent node [above] {g}
+    }
+    child {
+        [sibling distance=17mm]
+        node [bc]{}
+        child { node [rc]{}
+            child { node [bs]{}
+                edge from parent node [left] {n}
+            }
+            edge from parent node [left] {a}
+        }
         child { 
-                node [color=blue]{Bob}
-                child { 
-                        node [color=red]{Alice}
-                        child {
-                                node [color=blue]{Bob}
-                                child {
-                                        node [color=red]{Alice}
-                                        child {
-                                                node [color=blue]{Bob wins!}
-                                                edge from parent
-                                                        node [above] {n}
+            [sibling distance=10mm]
+            node [rc]{}
+            child { node [bc]{} 
+                child { node [rs]{}
+                    edge from parent node [left] {e}
+                }
+                edge from parent node [left] {e}
+            }
+            child { node [bc]{}
+                child { node [rs]{}
+                    child [grow=right] { node {}
+                        edge from parent [draw=none]
+                        child [grow=right] {
+                            node {Turn 5 (Alice's turn)}
+                            edge from parent [draw=none]
+                            child [grow=down] {
+                                node {Turn 6 (Bob's turn)}
+                                edge from parent [draw=none]
+                            }
+                            child [grow=up] {
+                                node {Turn 4 (Bob's turn)}
+                                edge from parent [draw=none]
+                                child [grow=up] {
+                                    node {Turn 3 (Alice's turn)}
+                                    edge from parent [draw=none]
+                                    child [grow=up] {
+                                        node {Turn 2 (Bob's turn)}
+                                        edge from parent [draw=none]
+                                        child [grow=up] {
+                                            node {Turn 1 (Alice's turn)}
+                                            edge from parent [draw=none]
                                         }
-                                        edge from parent
-                                                node [above] {e}
+                                    }
                                 }
-                                edge from parent
-                                        node [above] {e}
+                            }
                         }
-                        edge from parent
-                                node [above] {r}
+                    }
+                    edge from parent node [right] {e}
                 }
-                edge from parent
-                        node [below] {g}
+                edge from parent node [right] {i}
+            }
+            edge from parent node [right] {r}
         }
-        child { 
-                node [color=blue]{Bob}
-                child {
-                        node [color=red]{Alice}
-                        child {
-                                node [color=blue]{Bob wins!}
-                                edge from parent
-                                        node [above] {n}
-                        }
-                        edge from parent
-                                node [above] {a}
-                }
-                child {
-                        node [color=red]{Alice}
-                        child {
-                                node [color=blue]{Bob} 
-                                child {
-                                        node [color=red]{Alice wins!}
-                                        edge from parent
-                                                node [above] {e}
-                                }
-                                edge from parent
-                                        node [above] {e}
-                        }
-                        child {
-                                node [color=blue]{Bob}
-                                child {
-                                        node [color=red]{Alice wins!}
-                                        edge from parent
-                                                node [above] {e}
-                                }
-                                edge from parent
-                                        node [above] {i}
-                        }
-                        edge from parent
-                                node [above] {r}
-                }
-                edge from parent
-                        node [above] {t}
-        }
-;
+        edge from parent node [above] {t}
+    }
+};
 \end{tikzpicture}
-\caption{The complete game tree for the game of Ghost played with a dictionary containing only the words: ``green'', ''tan'', ``tree'', and ``trie''.  Note that here, if Bob plays cleverly, he can always win, no matter what Alice does.}
+\end{center}
+\caption{The complete game tree for the game of Ghost played with a dictionary
+containing only the words: ``ghost'', ``green'', ``tan'', ``tree'', and
+``trie''.  Every star represents a winning end for that level's corresponding
+player.  Note that here, if Bob plays cleverly, he can always win, no matter
+what Alice does.  This tree could be considered incomplete, as we have omitted
+all of the gibberish moves, which are immediate losses for the moving player.}
 \label{fig:tinytree}
 \end{figure}
 
@@ -218,7 +254,7 @@ corresponds to the maximum number of moves in the game), we say that there
 exists a move such that Alice immediately wins, or, no matter what Bob responds
 with, Alice can still win.  Formally, for the example in
 Figure~\ref{fig:tinytree} with maximum length 5, we say 
-\[a_0 \lor (\exists m_1 : a_1 \lor (\forall m_2 : a_2 \lor (\exists m_3 : a_3 \lor (\forall m_4 : a_4 \lor \exists m_5 : a_5))))\]
+\[a_0 \lor (\exists m_1~[ a_1 \lor (\forall m_2~[ a_2 \lor (\exists m_3~[ a_3 \lor (\forall m_4~[ a_4 \lor (\exists m_5~[ a_5])])])])])\]
 This complicated expression corresponds to an even-more-complicated english
 phrase:
 \begin{quote} Either Alice wins the game by not moving at all ($a_0$) or there
@@ -227,20 +263,35 @@ or, for all of Bob's possible responses ($m_2$) to that first move, either Alice
 immediately wins ($a_2$) or there exists a move ($m_3$) for Alice where either
 she immediately wins ($a_3$) or, for all of Bob's possible responses ($m_4$), either Alice immediately wins ($a_4$) or there exists a move ($m_5$) that causes her to win.\end{quote}
 This tortured expression presents an immediate argument for the benefits of
-mathematical notation.  Unfortunately, or notation still has a little
+mathematical notation.  Unfortunately, our notation still has a little
 ambiguity.  In particular, each $a_i$ is a function of both the dictionary, and
 all the previous moves $m_1 \cdots m_i$, and the set of legal moves at any
-given point is also a function of the dictionary and all the previous moves.  Thus, to be perfectly unambiguous, we should take our dictionary, a set of words $D$, and define a function ...
+given point is also a function of the dictionary and all the previous moves.
+Thus, to be totally explicit, we should take our dictionary, a set of
+words $D$, and define two functions: $v$ and $w$.  The function $v$ will take
+as input the dictionary $D$ and the list of all prior moves, and it will return
+a set of legal moves.  The function $w$ will take as input the dictionary $D$
+and all prior moves, and return whether the current player has just won the
+game.  Our final logical expression is then:
+\begin{align}
+w(D) &\lor (\exists m_1 \in v(D)~[ w(D, m_1) \nonumber \\
+&\hspace{1em}\lor (\forall m_2 \in v(D, m_1)~[ w(D, m_1, m_2) \nonumber \\
+&\hspace{2em}\lor (\exists m_3 \in v(D, m_1, m_2)~[ w(D, m_1, m_2, m_3) \\
+&\hspace{3em}\lor (\forall m_4 \in v(D, m_1, m_2, m_3)~[ w(D, m_1, m_2, m_3, m_4) \nonumber \\
+&\hspace{4em}\lor (\exists m_5 \in v(D, m_1, m_2, m_3, m_4)~[ w(D, m_1, m_2, m_3, m_4, m_5)])])])])]) \nonumber
+\end{align}
 
-Once we have our expression written down completely, we can see that all of the
-terms of the expression are well-defined within the expression once $D$ is
-specified --- it has no \newword{free variables}.  This means that, for a
-particular dictionary, the given statement is either true or it is false.  If
-the statement is true, then there exists a winning strategy for Alice.  If the
-statement is not true, then there does not exist a winning strategy for Alice.
-Because someone must win this game, if Alice can not be guaranteed a win, then
-Bob can be.  Thus, determining a winning strategy for a game of no chance and
-perfect information comes down to the statisfaction of a logical expression.
+
+Once we have our expression written down completely, we can see both that it is
+impractically large and nested to work with, and that all of the terms of the
+expression are well-defined within the expression once $D$ is specified --- it
+has no \newword{free variables}.  This means that, for a particular dictionary,
+the given statement is either true or it is false.  If the statement is true,
+then there exists a winning strategy for Alice.  If the statement is not true,
+then there does not exist a winning strategy for Alice.  Because someone must
+win this game, if Alice can not be guaranteed a win, then Bob can be.  Thus,
+determining a winning strategy for a game of no chance and perfect information
+comes down to the statisfaction of a logical expression.
 
 Somewhat surprisingly, this duality between expressions and games can encode
 any computation at all.  The interested reader is referred to ``Games, Puzzles,
