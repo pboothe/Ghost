@@ -70,6 +70,9 @@ immediate win for Alice in any language with single-letter words, but may be
 more interesting if single-character words are eliminated from the dictionary.
 Two example game transcripts may be seen in Figure~\ref{fig:transcript}.
 
+The game of Ghost was first analyzed in 1987 by Alan Frank\cite{wordways}, and
+he found that ... .  
+
 \begin{figure}
 \begin{tabular}{p{2.35in} | p{2.35in}}
 \hfill Game 1 \hfill ~ & \hfill Game 2 \hfill ~ \\
@@ -128,113 +131,6 @@ tree, and tries.  This means that the first player, Alice, can only choose from
 two letters if she would like to avoid creating gibberish!  The full tree for
 this game may be seen in Figure~\ref{fig:tinytree}.
 
-\begin{figure}
-\begin{center}
-\begin{tikzpicture}[
-        rc/.style={color=white,fill=red!70,circle},
-        bc/.style={color=white,fill=blue!70,circle},
-        rs/.style={color=white,fill=red!70,star,star points=7},
-        bs/.style={color=white,fill=blue!70,star,star points=7},
-]
-\node (root) [grow=down] {Game Start} child {
-[sibling distance=35mm]
-node [rc]{} 
-    child {
-        [sibling distance=15mm]
-        node [bc]{}
-        child { node [rc]{}
-            child { node [bc]{}
-                child { node [rc]{}
-                    child { node [bs]{}
-                        edge from parent node [left] {t}
-                    }
-                    edge from parent node [left] {s}
-                }
-                edge from parent node [left] {o}
-            }
-            edge from parent node [left] {h}
-        }
-        child { node [rc]{}
-            child { node [bc]{}
-                child { node [rc]{}
-                    child { node [bs]{}
-                        edge from parent node [right] {n}
-                    }
-                    edge from parent node [right] {e}
-                }
-                edge from parent node [right] {e}
-            }
-            edge from parent node [right] {r}
-        }
-        edge from parent node [above] {g}
-    }
-    child {
-        [sibling distance=17mm]
-        node [bc]{}
-        child { node [rc]{}
-            child { node [bs]{}
-                edge from parent node [left] {n}
-            }
-            edge from parent node [left] {a}
-        }
-        child { 
-            [sibling distance=10mm]
-            node [rc]{}
-            child { node [bc]{} 
-                child { node [rs]{}
-                    edge from parent node [left] {e}
-                }
-                edge from parent node [left] {e}
-            }
-            child { node [bc]{}
-                child { node [rs]{}
-                    child [grow=right] { node {}
-                        edge from parent [draw=none]
-                        child [grow=right] {
-                            node {Turn 5 (Alice's turn)}
-                            edge from parent [draw=none]
-                            child [grow=down] {
-                                node {Turn 6 (Bob's turn)}
-                                edge from parent [draw=none]
-                            }
-                            child [grow=up] {
-                                node {Turn 4 (Bob's turn)}
-                                edge from parent [draw=none]
-                                child [grow=up] {
-                                    node {Turn 3 (Alice's turn)}
-                                    edge from parent [draw=none]
-                                    child [grow=up] {
-                                        node {Turn 2 (Bob's turn)}
-                                        edge from parent [draw=none]
-                                        child [grow=up] {
-                                            node {Turn 1 (Alice's turn)}
-                                            edge from parent [draw=none]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    edge from parent node [right] {e}
-                }
-                edge from parent node [right] {i}
-            }
-            edge from parent node [right] {r}
-        }
-        edge from parent node [above] {t}
-    }
-};
-\end{tikzpicture}
-\end{center}
-\caption{The complete game tree for the game of Ghost played with a dictionary
-containing only the words: ``ghost'', ``green'', ``tan'', ``tree'', and
-``trie''.  Every star represents a winning end for that level's corresponding
-player.  Note that here, if Bob plays cleverly, he can always win, no matter
-what Alice does.  This tree could be considered incomplete, as we have omitted
-all of the gibberish moves, which are immediate losses for the moving player.}
-\label{fig:tinytree}
-\end{figure}
-
 When a game is completely described by a game tree, and every leaf of the tree
 involves one player or the other winning, then there exists a \newword{winning
 strategy} for one (and only one) of the players.  A winning strategy is a set
@@ -244,6 +140,19 @@ of the leaves of the tree (aka ends of the game) involve neither player
 winning.  In the example given in Figure~\ref{fig:tinytree}, Bob has a winning
 strategy.  Of course, with an aim towards actual formality, we can define this
 more rigorously in the form of a logical statement.
+
+\begin{figure}
+\begin{center}
+\input{tree}
+\end{center}
+\caption{The complete game tree for the game of Ghost played with a dictionary
+containing only the words: ``ghost'', ``green'', ``tan'', ``tree'', and
+``trie''.  Every star represents a winning end for that level's corresponding
+player.  Note that here, if Bob plays cleverly, he can always win, no matter
+what Alice does.  This tree could be considered incomplete, as we have omitted
+all of the gibberish moves, which are immediate losses for the moving player.}
+\label{fig:tinytree}
+\end{figure}
 
 \section{Encoding Winning Strategies With Logic} Let us define logical variables $\{a_i | 0 \le i \le n\}$, where $n$ is the
 maximum number of moves in a game, and move variables $m_i$, where $m_i$ is a
@@ -275,37 +184,46 @@ words $D$, and define two functions: $v$ and $w$.  The function $v$ will take
 as input the dictionary $D$ and the list of all prior moves, and it will return
 the set of valid moves.  The function $w$ will take as input the dictionary $D$
 and all prior moves, and return whether the current player has just won the
-game.  Our final logical expression is then:
+game.  Our final logical expression is 
 \begin{align}
-w(D) &\lor (\exists m_1 \in v(D)~[ w(D, m_1) \nonumber \\
-&\hspace{1em}\lor (\forall m_2 \in v(D, m_1)~[ w(D, m_1, m_2) \nonumber \\
-&\hspace{2em}\lor (\exists m_3 \in v(D, m_1, m_2)~[ w(D, m_1, m_2, m_3) \label{biglogic} \\
-&\hspace{3em}\lor (\forall m_4 \in v(D, m_1, m_2, m_3)~[ w(D, m_1, m_2, m_3, m_4) \nonumber \\
-&\hspace{4em}\lor (\exists m_5 \in v(D, m_1, m_2, m_3, m_4)~[ w(D, m_1, m_2, m_3, m_4, m_5)])])])])]) \nonumber
+w(D) &\lor \Biggl(\exists m_1 \in v(D)~\Bigg[ w(D, m_1) \nonumber \\
+&\hspace{.75em}\lor \bigg(\forall m_2 \in v(D, m_1)~\bigg[ w(D, m_1, m_2) \nonumber \\
+&\hspace{1.5em}\lor \Big(\exists m_3 \in v(D, m_1, m_2)~\Big[ w(D, m_1, m_2, m_3) \label{biglogic} \\
+&\hspace{2.25em}\lor \big(\forall m_4 \in v(D, m_1, m_2, m_3)~\big[ w(D, m_1, m_2, m_3, m_4) \nonumber \\
+&\hspace{3em}\lor (\exists m_5 \in v(D, m_1, m_2, m_3, m_4)~[ w(D, m_1, m_2, m_3, m_4, m_5)])
+\big]\big)
+\Big]\Big)
+\bigg]\bigg)
+\Bigg]\Bigg) \nonumber
 \end{align}
-
 
 Once we have our expression written down completely, we can see both that it is
 impractically large and nested to work with, and that all of the terms of the
 expression are well-defined within the expression once $D$ is specified --- it
-has no \newword{free variables}.  This means that, for a particular dictionary,
-the given statement is either true or it is false.  If the statement is true,
-then there exists a winning strategy for Alice.  If the statement is not true,
-then there does not exist a winning strategy for Alice.  Because someone must
-win this game, if Alice can not be guaranteed a win, then Bob can be.  Thus,
-determining a winning strategy for a game of no chance and perfect information
-comes down to the statisfaction of a logical expression.
+has no \newword{free variables} except for $D$, the dictionary.  This means
+that, for a particular dictionary with words of length at most 5, the given
+statement is either true or it is false.  If the statement is true, then there
+exists a winning strategy for Alice.  If the statement is not true, then there
+does not exist a winning strategy for Alice.  Because someone must win this
+game, if Alice can not be guaranteed a win, then Bob can be.  Thus, determining
+a winning strategy for a game of no chance and perfect information comes down
+to the statisfaction of a logical expression.
 
-Somewhat surprisingly, this duality between expressions and games can encode
+Somewhat surprisingly, this duality games and logical expressions can encode
 any computation at all.  The interested reader is referred to ``Games, Puzzles,
-and Computation'' by Hearn and Demaine\cite{gpc}, which explores this duality
-in great depth and discusses the  ...
+and Computation'' by Hearn and Demaine\cite{gpc} (derived from Hearn's
+dissertation of the same name\cite{hearndiss}), which explores this duality in
+great depth. For analyzing Ghost, however, we do not need that heavy machinery.
+Instead, we begin developing our game solver by noticing an intriguing symmetry between the game tree for Ghost and a classic data structure, the prefix tree.
 
 \section{Prefix Trees}
 
 Prefix trees were introduced as ``tries'' by Edward Fredkin in
-1960\cite{fredkin} based on the idea of dictionary re{\bf trie}val, but resultant confusion about how to pronounce the name
-(both ``tree'' and ``try'' are used) as well as the proliferation of other kinds of tree, have led people to the more modern name of prefix tree.  A prefix tree is ...
+1960\cite{fredkin} based on the idea of dictionary re{\bf trie}val, but
+resultant confusion about how to pronounce the name (both ``tree'' and ``try''
+are used) as well as the proliferation of other kinds of tree, have led people
+to the more modern name of prefix tree.  A prefix tree is a structure that
+efficiently holds a dictionary in computer memory ...
 
 From a computer science standpoint, building a solver for Ghost can be quite
 interesting.  Our solution allows us to combine a prefix tree and a game tree.
@@ -320,28 +238,35 @@ particular interest is programmatically discovering a subtree which is small
 enough to be ``memorizeable'' so that the player with the guaranteed win will
 be able to win without computer help in the future.  This document will be both
 an explication of how to do each of these, as well as a Literate Haskell
-program which solves the whole problem.
+program which solves the whole problem.  Because the typewriter-font text is a
+complete program, there is a small amount of boilerplate that must be gotten
+out of the way in the beginning: 
 
-\section{A Functional Trie}
-Our first order of business is to read in a dictionary from a file and turn the
-word data into a trie.  In the spirit of the rules of Scrabble, we will
-eliminate from consideration all proper nouns (a.k.a. capitalized words) and
-words with embedded punctuation (contractions and the like).  To be truly in
-the spirit of Scrabble, we use as our word list the official Scrabble players
-word list, widely available online as {\tt twl06.txt}.  The choice of word list
-is, of course, completely arbitrary, but the Scrabble list serves our purposes
-well because it represents actual words, instead of the more common lists of
-``character sequences which a spell-ckecker should accept'', which includes
-many abbreviations, acronyms, airport codes, and other non-words.
+\begin{code}
+module Main where
+import qualified Data.Map as Map
+\end{code}
+
+This sets up our code to be a program rather than a library, and imports the
+{\tt Map} data structure as well as its supporting functions.  A {\tt Map} is
+exactly that: a mapping from a range onto a domain.  Sometimes they are also
+called hashtables or dictionaries, but ``map'' is the most general term one
+can use to encompass this idea.
+
+\section{A Functional Prefix Tree} Our first order of business is to read in a
+dictionary from a file and turn the word data into a prefix tree.  We use as
+our word list the official Scrabble players word list, widely available online
+as {\tt twl06.txt}.  The choice of word list is, of course, completely
+arbitrary, but the Scrabble list serves our purposes well because it represents
+actual words, instead of the more common lists of ``character sequences which a
+spell-checker should accept'', lists which include many abbreviations, acronyms,
+airport codes, and other non-words.
 
 To read the data into the Trie, we define the appropriate datatype by
 simplifying the definition from the Wikipedia page for Trie and then defining
 our insert function appropriately.
 
 \begin{code}
-module Main where
-import qualified Data.Map as Map
-
 data Trie a =
      Trie { value :: a
           , children :: Map.Map Char (Trie a) }

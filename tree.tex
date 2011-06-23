@@ -1,0 +1,95 @@
+\begin{tikzpicture}[
+        rc/.style={color=white,fill=red!70,circle},
+        bc/.style={color=white,fill=blue!70,circle},
+        rs/.style={color=white,fill=red!70,star,star points=7},
+        bs/.style={color=white,fill=blue!70,star,star points=7},
+]
+\node (root) [grow=down,rc] {}
+[sibling distance=35mm]
+node [rc]{} 
+    child {
+        [sibling distance=15mm]
+        node [bc]{}
+        child { node [rc]{}
+            child { node [bc]{}
+                child { node [rc]{}
+                    child { node [bs]{}
+                        edge from parent node [left] {t}
+                    }
+                    edge from parent node [left] {s}
+                }
+                edge from parent node [left] {o}
+            }
+            edge from parent node [left] {h}
+        }
+        child { node [rc]{}
+            child { node [bc]{}
+                child { node [rc]{}
+                    child { node [bs]{}
+                        edge from parent node [right] {n}
+                    }
+                    edge from parent node [right] {e}
+                }
+                edge from parent node [right] {e}
+            }
+            edge from parent node [right] {r}
+        }
+        edge from parent node [above] {g}
+    }
+    child {
+        [sibling distance=17mm]
+        node [bc]{}
+        child { node [rc]{}
+            child { node [bs]{}
+                edge from parent node [left] {n}
+            }
+            edge from parent node [left] {a}
+        }
+        child { 
+            [sibling distance=10mm]
+            node [rc]{}
+            child { node [bc]{} 
+                child { node [rs]{}
+                    edge from parent node [left] {e}
+                }
+                edge from parent node [left] {e}
+            }
+            child { node [bc]{}
+                child { node [rs]{}
+                    child [grow=right] { node {}
+                        edge from parent [draw=none]
+                        child [grow=right] {
+                            node {Turn 5 (Alice's turn)}
+                            edge from parent [draw=none]
+                            child [grow=down] {
+                                node {Turn 6 (Bob's turn)}
+                                edge from parent [draw=none]
+                            }
+                            child [grow=up] {
+                                node {Turn 4 (Bob's turn)}
+                                edge from parent [draw=none]
+                                child [grow=up] {
+                                    node {Turn 3 (Alice's turn)}
+                                    edge from parent [draw=none]
+                                    child [grow=up] {
+                                        node {Turn 2 (Bob's turn)}
+                                        edge from parent [draw=none]
+                                        child [grow=up] {
+                                            node {Turn 1 (Alice's turn)}
+                                            edge from parent [draw=none]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    edge from parent node [right] {e}
+                }
+                edge from parent node [right] {i}
+            }
+            edge from parent node [right] {r}
+        }
+        edge from parent node [above] {t}
+    }
+;
+\end{tikzpicture}

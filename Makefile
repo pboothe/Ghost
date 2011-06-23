@@ -10,7 +10,7 @@ ghostout.tex: ghost
 	./ghost > $@
 
 #paper.pdf: paper.lhs ghostout.tex
-paper.pdf: paper.lhs bibliography.bib
+paper.pdf: paper.lhs bibliography.bib tree.tex
 	pdflatex paper.lhs 
 	bibtex paper 
 	pdflatex paper.lhs 
