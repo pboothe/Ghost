@@ -123,22 +123,22 @@ In analyzing games of this type, YYYY constructed what we call a game tree.
 A game tree specifies the complete state of the game, how that state was
 reached, and all possible subgames which might result from a given position.
 Every vertex of the tree represents a game state and a single player's turn,
-and every edge represents a move that one player is allowed to do in order to
-make it another player's turn.  To concretize this, we will look at the game of
-Ghost with an extremely simple dictionary.  Let us say that Alice and Bob agree
-that they should use a dictionary containing only 4 words: ghost, green, tan,
-tree, and tries.  This means that the first player, Alice, can only choose from
-two letters if she would like to avoid creating gibberish!  The full tree for
-this game may be seen in Figure~\ref{fig:tinytree}.
+and every edge represents a move that one player is allowed to do when the game
+is in that state.  To concretize this, we will look at the game of Ghost with
+an extremely simple dictionary.  Let us say that Alice and Bob agree that they
+should use a dictionary containing only five words: ghost, green, tan, tree, and
+tries.  This means that the first player, Alice, can only choose from two
+letters if she would like to avoid creating gibberish!  The full tree for this
+game is Figure~\ref{fig:tinytree}.
 
 When a game is completely described by a game tree, and every leaf of the tree
-involves one player or the other winning, then there exists a \newword{winning
+represents an endgame that is not a tie, then there exists a \newword{winning
 strategy} for one (and only one) of the players.  A winning strategy is a set
-of moves which, if performed, allows the moving to be guaranteed of a win.
+of moves which, if performed, allows the strategic player to be guaranteed of a win.
 Tic-tac-toe has no winning strategy, because despite its simple game tree, many
 of the leaves of the tree (aka ends of the game) involve neither player
 winning.  In the example given in Figure~\ref{fig:tinytree}, Bob has a winning
-strategy.  Of course, with an aim towards actual formality, we can define this
+strategy.  No matter how Alice plays, it is always possible for Bob to steer the game so that he eventually wins.  Of course, with an aim towards actual formality, we can define this
 more rigorously in the form of a logical statement.
 
 \begin{figure}
@@ -173,7 +173,7 @@ phrase:
 exists a first move ($m_1$) that either causes her to immediately win ($a_1$),
 or, for all of Bob's possible responses ($m_2$) to that first move, either Alice
 immediately wins ($a_2$) or there exists a move ($m_3$) for Alice where either
-she immediately wins ($a_3$) or, for all of Bob's possible responses ($m_4$), either Alice immediately wins ($a_4$) or there exists a move ($m_5$) that causes her to win.\end{quote}
+she immediately wins ($a_3$) or, for all of Bob's possible responses ($m_4$), either Alice immediately wins ($a_4$) or there exists a move ($m_5$) that causes her to win ($a_5$).\end{quote}
 This tortured expression presents an immediate argument for the benefits of
 mathematical notation.  Unfortunately, our notation still has a little
 ambiguity.  In particular, each $a_i$ is a function of both the dictionary, and
@@ -184,11 +184,11 @@ words $D$, and define two functions: $v$ and $w$.  The function $v$ will take
 as input the dictionary $D$ and the list of all prior moves, and it will return
 the set of valid moves.  The function $w$ will take as input the dictionary $D$
 and all prior moves, and return whether the current player has just won the
-game.  Our final logical expression is 
+game.  Our final logical expression is:
 \begin{align}
 w(D) &\lor \Biggl(\exists m_1 \in v(D)~\Bigg[ w(D, m_1) \nonumber \\
-&\hspace{.75em}\lor \bigg(\forall m_2 \in v(D, m_1)~\bigg[ w(D, m_1, m_2) \nonumber \\
-&\hspace{1.5em}\lor \Big(\exists m_3 \in v(D, m_1, m_2)~\Big[ w(D, m_1, m_2, m_3) \label{biglogic} \\
+&\hspace{.75em}\lor \bigg(\forall m_2 \in v(D, m_1)~\bigg[ w(D, m_1, m_2) \label{biglogic} \\
+&\hspace{1.5em}\lor \Big(\exists m_3 \in v(D, m_1, m_2)~\Big[ w(D, m_1, m_2, m_3) \nonumber \\
 &\hspace{2.25em}\lor \big(\forall m_4 \in v(D, m_1, m_2, m_3)~\big[ w(D, m_1, m_2, m_3, m_4) \nonumber \\
 &\hspace{3em}\lor (\exists m_5 \in v(D, m_1, m_2, m_3, m_4)~[ w(D, m_1, m_2, m_3, m_4, m_5)])
 \big]\big)
@@ -213,7 +213,7 @@ Somewhat surprisingly, this duality games and logical expressions can encode
 any computation at all.  The interested reader is referred to ``Games, Puzzles,
 and Computation'' by Hearn and Demaine\cite{gpc} (derived from Hearn's
 dissertation of the same name\cite{hearndiss}), which explores this duality in
-great depth. For analyzing Ghost, however, we do not need that heavy machinery.
+great depth. For analyzing Ghost, however, we do not need such heavy machinery.
 Instead, we begin developing our game solver by noticing an intriguing symmetry between the game tree for Ghost and a classic data structure, the prefix tree.
 
 \section{Prefix Trees}
@@ -223,7 +223,23 @@ Prefix trees were introduced as ``tries'' by Edward Fredkin in
 resultant confusion about how to pronounce the name (both ``tree'' and ``try''
 are used) as well as the proliferation of other kinds of tree, have led people
 to the more modern name of prefix tree.  A prefix tree is a structure that
-efficiently holds a dictionary in computer memory ...
+efficiently holds a dictionary in computer memory.   Friedkin's original paper
+specified that each vertex in the tree consist of two parts: some data
+(possibly null) as well as an array mapping single characters to subtrees (also
+possibly null).  We keep one vertex representing the root of the tree, with a
+prefix of the empty string.  Then, as words get added to the dictionary, we
+create and codify the tree character by character and node by node.  In
+Figure~\ref{fig:prefixtree}, one can see a prefix tree containing the words
+``ghost'', ``green'', ``tan'', ``tree'', and ``trie''.  The close connection between prefix trees and game trees for the game of Ghost becomes immediately apparent when Figures~\ref{fig:prefixtree} and~\ref{fig:tinytree} are compared.
+
+\begin{figure}
+\begin{center}
+\input{prefixtree}
+\end{center}
+\caption{A prefix tree containing only the words: ``ghost'', ``green'',
+``tan'', ``tree'', and ``trie''.  }
+\label{fig:prefixtree}
+\end{figure}
 
 From a computer science standpoint, building a solver for Ghost can be quite
 interesting.  Our solution allows us to combine a prefix tree and a game tree.
@@ -252,6 +268,10 @@ This sets up our code to be a program rather than a library, and imports the
 exactly that: a mapping from a range onto a domain.  Sometimes they are also
 called hashtables or dictionaries, but ``map'' is the most general term one
 can use to encompass this idea.
+
+\section{Haskell} A brief introduction to Haskell, describing how it attempts
+to bring together the mathematical conception of a function and the computer
+science conception of a function, and largely succeeds.  Also, we will lay out the architecture of our program.
 
 \section{A Functional Prefix Tree} Our first order of business is to read in a
 dictionary from a file and turn the word data into a prefix tree.  We use as
@@ -293,7 +313,7 @@ Once we have a trie, our next concern is the translation from trie into game tre
 \section{From Prefix Tree to Game Tree}
 
 To translate the trie into a game tree, we begin by noting that our players
-alternate turns.  Therefore, all even moves are Alice's moves, and all the odd
+alternate turns.  Therefore, starting with move 0, all even moves are Alice's moves, and all the odd
 moves are Bob's moves.  We will define a player data type and some
 corresponding helper functions, and then use the player's turn as the data for
 the trie nodes.
@@ -335,15 +355,15 @@ Given a game of no chance with perfect information, there exists a strategy
 tree for one of the players where, no matter what the other player does, the
 strategy guarantees a win.  To find this tree, we engage in min-max search
 (also called alpha-beta search, which is a nice linguistic reference to the
-alphabet in our tree of characters).
+alphabet in our tree of characters as well as the names of our two players).
 
 In min-max search, we attempt to find a starting letter for Alice, such that
 for all responses Bob could give, there exists a letter for Alice, such that
 for all responses Bob could give, there exists a letter for Alice, such that
 for all responses Bob could give, there exists a letter for Alice, ...  such
-that Alice wins the game.  In this search, we alternate logical conditions at
-each level.  In a strategy tree that makes Alice the winner it must be true
-that there exists a winning move for Alice on every odd level, however it mst
+that Alice wins the game.  In this search we alternate logical conditions at
+each level, just like in Equations~\ref{smallogic} and~\ref{biglogic}.  In a strategy tree that makes Alice the winner it must be true
+that there exists a winning move for Alice on every odd level, however it must
 also be true that on every even level, all moves that Bob might make will
 eventually result in a win for Alice.
 
@@ -400,8 +420,8 @@ would like to find the smallest subtree that will allow us to win.
 
 To do this, we go through all of the letters of the alphabet which are still a
 win for the winning player, find the tree which is the smallest, and then print
-out that tree.  Assuming Alice is the winner, then when rinting out the tree,
-for every Alice node will print the winning move with the smallest tree, but
+out that tree.  Assuming Alice is the winner, then when printing out the tree,
+for every Alice node we will print the winning move with the smallest tree, but
 for Bob we must print all possible moves Bob may make.  We begin by defining a
 function which will take as its input a solved trie, and output a minimal trie,
 and in order to do that, we must define a size function for tries.
