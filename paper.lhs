@@ -2,7 +2,7 @@
 
 \usepackage{amsmath}
 \usepackage{tikz}
-\usetikzlibrary{shapes,snakes}
+\usetikzlibrary{shapes,snakes,fit}
 
 \usepackage{fancyvrb}
 \usepackage{verbatim}
@@ -230,11 +230,15 @@ possibly null).  We keep one vertex representing the root of the tree, with a
 prefix of the empty string.  Then, as words get added to the dictionary, we
 create and codify the tree character by character and node by node.  In
 Figure~\ref{fig:prefixtree}, one can see a prefix tree containing the words
-``ghost'', ``green'', ``tan'', ``tree'', and ``trie''.  The close connection between prefix trees and game trees for the game of Ghost becomes immediately apparent when Figures~\ref{fig:prefixtree} and~\ref{fig:tinytree} are compared.
+``ghost'', ``green'', ``tan'', ``tree'', and ``trie''.  The close connection
+between prefix trees and game trees for the game of Ghost becomes immediately
+apparent when Figures~\ref{fig:prefixtree} and~\ref{fig:tinytree} are compared.
 
 \begin{figure}
 \begin{center}
 \input{prefixtree}
+
+\includegraphics[width=3in,angle=-90]{whiteboardtrie.jpg}
 \end{center}
 \caption{A prefix tree containing only the words: ``ghost'', ``green'',
 ``tan'', ``tree'', and ``trie''.  }
@@ -269,18 +273,39 @@ exactly that: a mapping from a range onto a domain.  Sometimes they are also
 called hashtables or dictionaries, but ``map'' is the most general term one
 can use to encompass this idea.
 
-\section{Haskell} A brief introduction to Haskell, describing how it attempts
-to bring together the mathematical conception of a function and the computer
-science conception of a function, and largely succeeds.  Also, we will lay out the architecture of our program.
+\section{Haskell} The idea of an equivalence between maps and functions is an
+old one in mathematics, but seems more frequently honored in the breach by
+computer programs.  Functions in programs may (and frequently do) return
+different values even when called with the exact same arguments.  The ability
+to return different outputs from the same inputs comes with the idea of
+\newword{program state}.  Sometimes program state is encoded in global
+variables, perhaps a counter or something else.  Sometimes we use program state
+to refer to the state of the world as a whole --- the function which reads user
+input is a great example of this.  In all of these cases, the return value of
+the function depends on more than just the inputs.
 
-\section{A Functional Prefix Tree} Our first order of business is to read in a
-dictionary from a file and turn the word data into a prefix tree.  We use as
-our word list the official Scrabble players word list, widely available online
-as {\tt twl06.txt}.  The choice of word list is, of course, completely
-arbitrary, but the Scrabble list serves our purposes well because it represents
-actual words, instead of the more common lists of ``character sequences which a
-spell-checker should accept'', lists which include many abbreviations, acronyms,
-airport codes, and other non-words.
+The language Haskell was designed, in part, to face this problem head-on.  In
+Haskell, all functions are explicitly mappings from input values to output
+values.  This means that a declaration like {\tt f x = x * x} (which is valid
+Haskell code) defines a function {\tt f} which maps its input {\tt x} to the
+square of the input.  In an interesting twist, these state-free functions are
+the only functions a programmer can declare.  Hidden state is explicitly
+disallowed (there do exist workarounds, but they should be used sparingly and
+with great care).  Because of this strong guarantee, it becomes much easier for
+a program compiler and interpreter to verify that a program's types are
+correct.  In exchange for clarity of declaration certain things end up being
+much more awkward, particularly input and output.  In our program, we restrict
+input and output to the {\tt main} function, which is recommended as good
+design whenever possible. 
+
+With our program, we will define a prefix tree datatype and a host of
+supporting functions.  Then we will define a method for converting prefix trees
+to game tress, a method for turing a game tree into a solved game tree, and a
+method of minimizing a solved game tree.  In the very last section, we bring
+all of these steps together, along with file input and output, into a solution
+which completely solves the game of Ghost.
+
+\section{A Functional Prefix Tree} 
 
 To read the data into the Trie, we define the appropriate datatype by
 simplifying the definition from the Wikipedia page for Trie and then defining
@@ -295,7 +320,14 @@ data Ending = Middle | End
 
 emptyTrie :: Trie Ending
 emptyTrie = Trie Middle Map.empty
+\end{code}
 
+The code snippet declares two datatypes and one value.  The datatype {\tt
+Ending} consists of either the value {\tt Middle} or the value {\tt End}.  We
+will use this datatype in our prefix tree to indicate whether or not we have
+reached the end of a word.  
+
+\begin{code}
 insert :: String -> Trie Ending -> Trie Ending
 insert "" t = Trie End Map.empty
 insert (first:word) trie = 
@@ -486,20 +518,67 @@ printGameTrie prefix (Trie gn kids) =
 \end{code}
 
 \section{Putting it all together}
+Our first order of business is to read in a
+dictionary from a file and turn the word data into a prefix tree.  We use as
+our word list the official Scrabble players word list, widely available online
+as {\tt twl06.txt}.  The choice of word list is, of course, completely
+arbitrary, but the Scrabble list serves our purposes well because it represents
+actual words, instead of the more common lists of ``character sequences which a
+spell-checker should accept'', lists which include many abbreviations, acronyms,
+airport codes, and other non-words.
 
-\begin{code}
-main :: IO ()
-main = 
-    do 
-        contents <- readFile "twl06.txt"
-        let validwords = words contents
-        let tree = foldr insert emptyTrie validwords
+Then, we use the {\tt words} function to break the contents of the file into
+whitespace-separated words, insert each word into our prefix tree, turn the
+prefix tree into a game tree, solve the game tree, find a minimal solution, and
+then print out our minimal solution.  Each of these stages of execution may be
+seen in the code below.  
+
+\begin{code} 
+main :: IO () 
+main = do 
+        contents <- readFile "twl06.txt" 
+        let validwords = words contents 
+        let tree = foldr insert emptyTrie validwords 
         let gameTree = trieToGameTrie Alice tree 
-        let winningTree = alphaBeta gameTree
-        let thewinner = gameWinner winningTree
-        putStrLn ("The game is a win for " ++ showPlayer thewinner)
-        putStrLn (printGameTrie "" (minimize thewinner winningTree))
-\end{code}
+        let winningTree = alphaBeta gameTree 
+        let thewinner = gameWinner winningTree 
+        putStrLn ("The game is a win for " ++ showPlayer thewinner) 
+        putStrLn (printGameTrie "" (minimize thewinner winningTree)) 
+\end{code} 
+
+The function {\tt main} is what Haskell (and
+many other languages) use to determine where to being execution.  The function
+and its function signature look slightly different from the other functions.
+The {\tt do} and {\tt let} statements in particular look different than the
+ones we have used before.  This difference comes from the fact that this
+function does input and output, and doing input and output, which are
+inherently operations that depend on state, in a language which attempts to
+make functions as mathematical as possible, was an open research problem for
+some time. The best known solution ingengiously uses category theory, and is a
+little too intricate to describe here.  The interested reader is referred to
+``Tackling the Awkward Squad'' by Simon Peyton Jones\cite{spj}.
+
+In the end, we get the (somewhat surprising) result that the game of Ghost is a
+win for Bob when using the official Scrabble word list.  Now matter what word
+Alice starts with, it is always possible for Bob to steer the game into a win.
+If we make a na\"ive probabilistic argument that each letter has a 50/50 chance
+of being a win for one player or the other, then the odds of the game being a
+win for Bob end up being $1$ in $2^{26}$ (better than some state lotteries, but
+not by much). It is the surprisingness of this result which led to the solution
+being written in Haskell, a language which is known for its ability to write
+very clear code that will provably never cause certain kinds of crashes.
+
+Unfortunately for the purposes of memorization, a winning strategy for the
+second player means that there are at least 26 words that must be memorized.
+In actual fact the minimal winning strategy for Bob consists of 56 words:
+\begin{quote}aquiculture, aquifer, aquilegia, aquiver, bwana, cwm, drave, dreck, drink,
+droll, druse, dry, ewe, fjeld, fjord, gjetost, hryvnia, ihram, jnana,
+kwashiorkor, llano, mho, nth, oquassa, prawn, prequel, prithee, pro, prurigo,
+pry, qua, qubit, quetzal, quiff, quondam, qursh, rhamnus, rheum, rhizosphere,
+rho, rhumb, rhyolitic, squoosh, tchotchke, uxoricide, vying, wrath, wrest,
+wrist, wrought, wrung, wry, xanthic, xanthin, yttrium, and zzz.\end{quote}  A brief tour
+through the winning words shows that success comes from a knowledge of foreign
+languages, science, and math, as well as some sleep.
 
 \bibliographystyle{siam}
 \bibliography{bibliography}
@@ -507,7 +586,7 @@ main =
 
 \Appendix\section{Output of our program}
 We get the output:
-%\verbatiminput{ghostout.tex}
+\verbatiminput{ghostout.tex}
 
 
 \end{document}
