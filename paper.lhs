@@ -478,7 +478,7 @@ minimize bigwinner (Trie gamenode kids) =
     else
         let
             minkids = Map.map (minimize bigwinner) kids
-            kidlist = (Map.toList minkids)
+            kidlist = Map.toList minkids
             iswinningmove (c,t) = same (gameWinner t) bigwinner
             winningmoves = filter iswinningmove kidlist
             smallerpair (c1, t1) (c2, t2) = 
@@ -538,28 +538,31 @@ main :: IO ()
 main = do 
         contents <- readFile "twl06.txt" 
         let validwords = words contents 
+
         let tree = foldr insert emptyTrie validwords 
         let gameTree = trieToGameTrie Alice tree 
         let winningTree = alphaBeta gameTree 
         let thewinner = gameWinner winningTree 
         putStrLn ("The game is a win for " ++ showPlayer thewinner) 
-        putStrLn (printGameTrie "" (minimize thewinner winningTree)) 
+
+        let mintree = minimize thewinner winningTree
+        putStrLn (printGameTrie "" mintree) 
 \end{code} 
 
-The function {\tt main} is what Haskell (and
-many other languages) use to determine where to being execution.  The function
-and its function signature look slightly different from the other functions.
-The {\tt do} and {\tt let} statements in particular look different than the
-ones we have used before.  This difference comes from the fact that this
-function does input and output, and doing input and output, which are
-inherently operations that depend on state, in a language which attempts to
-make functions as mathematical as possible, was an open research problem for
-some time. The best known solution ingengiously uses category theory, and is a
-little too intricate to describe here.  The interested reader is referred to
-``Tackling the Awkward Squad'' by Simon Peyton Jones\cite{spj}.
+The function {\tt main} is what Haskell (and many other languages) use to
+determine where to being execution.  The function and its function signature
+look slightly different from the other functions.  The {\tt do} and {\tt let}
+statements in particular look different than the ones we have used before.
+This difference comes from the fact that this function does input and output,
+and doing input and output, which are inherently operations that depend on
+state, in a language which attempts to make functions as mathematical as
+possible, was an open research problem for some time. The best known solution
+to this conundrum ingengiously uses category theory, and is a little too
+intricate to describe here.  The interested reader is referred to ``Tackling
+the Awkward Squad'' by Simon Peyton Jones\cite{spj}.
 
 In the end, we get the (somewhat surprising) result that the game of Ghost is a
-win for Bob when using the official Scrabble word list.  Now matter what word
+win for Bob when using the official Scrabble word list.  No matter what letter
 Alice starts with, it is always possible for Bob to steer the game into a win.
 If we make a na\"ive probabilistic argument that each letter has a 50/50 chance
 of being a win for one player or the other, then the odds of the game being a
